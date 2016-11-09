@@ -1,0 +1,185 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../shared-styles.html">
+
+<link rel="import" href="../my-icons.html">
+
+<dom-module id="horaires-elem">
+  <template>
+  <style is="custom-style" include="shared-styles iron-flex iron-positioning iron-flex-factors iron-flex-alignment">
+    :host {
+      display: block;
+      width: 100%;
+    }
+    table {
+      text-align: left;
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+    table td, table th {
+      border-bottom: 1px solid black;
+    }
+    th.border-left{
+      border-left: 1px solid black;
+    }
+    th.border-right{
+      border-right: 1px solid black;
+    }
+    th.no-border{
+      border: none;
+    }
+  </style>
+
+  <div class="padding-10">
+    <div class="title horizontal layout">
+      <h2>Horaires</h2>
+      <div class="flex-1"></div>
+      <paper-button>Modifier</paper-button>
+    </div>
+    <div class="content">
+      <table class="full-width">
+        <thead>
+          <tr>
+            <th class="no-border"></th>
+            <th class="border-left">
+              Matin
+            </th>
+            <th></th>
+            <th class="border-left">
+              Après-midi
+            </th>
+            <th class="border-right"></th>
+            <th class="no-border"></th>
+          </tr>
+          <tr>
+            <th>
+              Date
+            </th>
+            <th class="border-left">
+              Arrivé
+            </th>
+            <th>
+              Départ
+            </th>
+            <th class="border-left">
+              Arrivé
+            </th>
+            <th class="border-right">
+              Départ
+            </th>
+            <th>
+              Total
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <template is="dom-repeat" items="{{horaires}}">
+
+            <tr>
+              <td>
+                {{item.date}}
+              </td>
+              <td>
+                {{item.morning_start}}
+              </td>
+              <td>
+                {{item.morning_end}}
+              </td>
+              <td>
+                {{item.postmorning_start}}
+              </td>
+              <td>
+                {{item.postmorning_end}}
+              </td>
+              <td>
+                {{item.total_hours}}
+              </td>
+            </tr>
+
+          </template>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'horaires-elem',
+      properties: {
+      },
+      horaires: {
+        type: Array,
+        notify: true,
+      },
+
+      ready: function(){
+        // this.horaires = [];
+        this.set('horaires', []);
+      },
+
+      setEntry: function(date, entry) {
+        this.horaires[date] = entry;
+      },
+      getEntry: function(date){
+        return this.horaires[date];
+      },
+      setEntryKeyData: function(date, key, data){
+        var index;
+        if ((index = this.checkExistFromLast(date)) < 0){
+          this.push('horaires', {
+            date: date,
+            morning_start: null,
+            morning_end: null,
+            postmorning_start: null,
+            postmorning_end: null,
+            total_hours: null,
+          });
+          index = this.horaires.length - 1;
+        }
+        console.log('horaires.'+index+"."+key);
+        this.set('horaires.'+index+"."+key, data);
+        this.updateTotal(index);
+        console.log(this.horaires);
+      },
+      getEntryKeyData: function(date, key) {
+        if (this.horaires[date] === undefined){
+          return undefined;
+        }
+        return this.horaires[date][key];
+      },
+      updateTotal: function(index) {
+        var tmp = this.horaires[index];
+        if (tmp.morning_end != null){
+          var total_hours = ((tmp.morning_end != null ? tmp.morning_end.hours - tmp.morning_start.hours : 0) + (tmp.postmorning_end != null ? tmp.postmorning_end.hours - tmp.postmorning_start.hours : 0));
+          var total_minutes = ((tmp.morning_end != null ? tmp.morning_end.minutes - tmp.morning_start.minutes : 0) + (tmp.postmorning_end != null ? tmp.postmorning_end.minutes - tmp.postmorning_start.minutes : 0));
+          if (total_minutes < 0){
+            total_minutes = -total_minutes;
+            if (total_hours > 0){
+              total_hours--;
+            } else {
+              total_hours = 0;
+            }
+          }
+          this.set('horaires.'+index+'.total_hours', new Hour(total_hours, total_minutes));
+        }
+       },
+      checkExistFromLast: function(date){
+        for (var i = this.horaires.length - 1; i >= 0 ; i--) {
+          if (this.horaires[i].date == date){
+            console.log('find');
+            return i;
+          }
+        }
+        return -1;
+      },
+
+    });
+  </script>
+</dom-module>

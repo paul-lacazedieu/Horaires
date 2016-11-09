@@ -1,0 +1,116 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared-styles.html">
+
+<link rel="import" href="../my-icons.html">
+
+<dom-module id="my-timer">
+  <template>
+  <style is="custom-style" include="shared-styles">
+    :host {
+      display: block;
+    }
+    span {
+      font-size: 10em;
+      font-weight: bold;
+      transition: font-size 0.2s;
+    }
+    @media screen and (max-width: 500px) {
+      span {
+        font-size: 6em;
+      }
+    }
+    @media screen and (max-width: 300px) {
+      span {
+        font-size: 3em;
+      }
+    }
+  </style>
+
+    <span>
+      {{time}}
+    </span>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'my-timer',
+      properties: {
+        run: {
+          type: Boolean,
+          value: false,
+        },
+      },
+      time: "",
+      today: null,
+
+      ready: function(){
+        this.today = new Date();
+        if (this.run){
+          this.startTimer();
+        }
+      },
+
+      startTimer: function() {
+        this.run = true;
+        this.updateTime();
+      },
+
+      stopTimer: function() {
+        this.run = false;
+      },
+
+      nextTimer: function(){
+        this.async(this.updateTime, 2000);
+      },
+
+      updateTime : function() {
+        var d = new Date();
+        hours = ""+d.getHours();
+        minutes = ""+d.getMinutes();
+        if (hours.length == 1){
+          hours = "0"+hours;
+        }
+        if (minutes.length == 1){
+          minutes = "0"+minutes;
+        }
+        this.time = hours+':'+minutes;
+        this.fire('updated');
+        if (d.getDate() != this.today.getDate()){
+          this.date = d;
+          this.fire('date-changed');
+        }
+        if (this.run){
+          this.nextTimer();
+        }
+      },
+
+      getTime: function() {
+        return this.time;
+      },
+
+      getTimeObject: function() {
+        var tmp = this.time.split(':');
+        for (var i = 0; i < tmp.length; i++) {
+          tmp[i] = Number(tmp[i]);
+        }
+        return new Hour(tmp[0], tmp[1]);
+      },
+
+      getDate: function() {
+        var d = new Date();
+        var day = ""+d.getDate();
+        var month = ""+(d.getMonth()+1);
+        var year = ""+d.getFullYear();
+        if (day.length == 1) {
+          day = "0"+day;
+        }
+        if (month.length == 1) {
+          month = "0"+month;
+        }
+        return day + "/" + month + "/" + year;
+      }
+    });
+  </script>
+</dom-module>

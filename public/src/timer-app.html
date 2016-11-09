@@ -1,0 +1,115 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../../bower_components/polymerfire/firebase-auth.html">
+
+<link rel="import" href="./timer/timer.html">
+<link rel="import" href="./horaires/horaires.html">
+
+<link rel="import" href="./shared-styles.html">
+
+<link rel="import" href="./my-icons.html">
+
+
+<dom-module id="timer-app">
+  <template>
+  <style is="custom-style" include="shared-styles iron-flex iron-positioning iron-flex-alignment">
+    :host {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    #stateButton {
+      background-color: #757575;
+      color: white;
+      transition: background-color 0.5s;
+      transition-delay: 0.25s;
+    }
+    #stateButton.working {
+      background-color: #2979FF;
+      color: white;
+    }
+  </style>
+
+  <div class="full layout vertical center-center">
+
+    <my-timer id="timer" run="true" on-date-changed="dateChanged"></my-timer>
+    <paper-button id="stateButton" class$="{{ state }}" disabled$="{{journeyEnded}}" on-tap="changeState">{{message}}</paper-button>
+    <horaires-elem id="horaires"></horaires-elem>
+
+  </div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'timer-app',
+      properties: {
+      },
+      morning: true,
+      arrived: false,
+      state: "",
+      message: "",
+      journeyEnded: false,
+
+      observers: [
+        'arrivedChanged(arrived)',
+      ],
+
+      arrivedChanged: function(){
+        this.updateMessage();
+      },
+
+      ready: function() {
+        this.updateMorning();
+        this.updateMessage();
+      },
+
+      updateMorning: function(){
+
+      },
+
+      updateMessage: function(){
+        if (this.journeyEnded){
+          this.message = "Journée fini !!"
+          this.state = "";
+        }
+        else if (this.arrived){
+          this.message = "Départ";
+          this.state = "working"
+        } else {
+          this.message = "Arrivé";
+          this.state = "";
+        }
+      },
+
+      changeState: function(){
+        var key = "";
+        if (this.morning && !this.arrived){
+          key = "morning_start";
+        } else if (this.morning && this.arrived){
+          key = "morning_end";
+          this.morning = false;
+        } else if (!this.morning && !this.arrived){
+          key = "postmorning_start";
+        } else if (!this.morning && this.arrived){
+          key = "postmorning_end";
+          this.journeyEnded = true;
+        }
+        this.$.horaires.setEntryKeyData(this.$.timer.getDate(), key, this.$.timer.getTimeObject());
+        this.arrived = !this.arrived;
+      },
+
+      dateChanged: function(){
+        this.morning = true;
+        this.arrived = false;
+        this.journeyEnded = false;
+      },
+
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,9 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/factures-app.html",
+  "fragments": [
+    "src/login.html",
+    "src/homepage.html",
+    "src/factures.html"
+  ]
+}
